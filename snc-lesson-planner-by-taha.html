@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SNC Lesson Planner — Software by Taha</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7f2;--card:#fff;--ink:#1d2b2a;--mute:#5a6b68;--green:#0b4f3c;--sage:#dce8e0;--gold:#e3a72f;--line:#cfd9d2;--ong:#fff}
+:root[data-theme=dark]{--bg:#101a18;--card:#17231f;--ink:#e8efe9;--mute:#9fb3ad;--green:#3fae86;--sage:#1f332c;--gold:#e3a72f;--line:#2b403a;--ong:#06251b}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101a18;--card:#17231f;--ink:#e8efe9;--mute:#9fb3ad;--green:#3fae86;--sage:#1f332c;--line:#2b403a;--ong:#06251b}}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Nunito Sans",system-ui,sans-serif}
+header{background:var(--green);color:var(--ong);padding:20px 16px}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font:700 26px/1.2 Merriweather,Georgia,serif;margin:0}
+header p{margin:4px 0 0;opacity:.9}
+main{display:grid;gap:20px;padding:20px 16px;grid-template-columns:1fr}
+@media(min-width:900px){main{grid-template-columns:340px 1fr;align-items:start}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:6px;padding:10px 14px;cursor:pointer;background:var(--green);color:var(--ong)}
+button.alt{background:var(--sage);color:var(--ink)}
+.gen{width:100%;margin-top:16px;padding:13px;font-size:17px;background:var(--gold);color:#2a1d00}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.plan h2{font:700 20px Merriweather,Georgia,serif;margin:0 0 4px}
+.plan h3{font:700 16px "Nunito Sans",sans-serif;margin:20px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--gold);color:var(--green)}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 14px;background:var(--sage);padding:10px 12px;border-radius:8px;font-size:14px;margin-top:10px}
+.plan ul,.plan ol{margin:0;padding-left:20px}.plan li{margin:3px 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}th{background:var(--sage)}
+.empty{color:var(--mute);text-align:center;padding:40px 10px}
+.saved{margin-top:16px;font-size:14px}.saved div{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+.saved a{cursor:pointer;color:var(--green);font-weight:700;text-decoration:underline}
+footer{text-align:center;color:var(--mute);font-size:14px;padding:10px 16px 28px}
+.note{font-size:13px;color:var(--mute);margin-top:14px}
+@media print{header,form,.tools,.saved,footer,.note{display:none!important}main{display:block;padding:0}.panel{border:0;padding:0}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>SNC Lesson Planner</h1><p>Auto lesson plans aligned to Pakistan's Single National Curriculum · Software by Taha</p></div></header>
+<main class="wrap">
+<aside class="panel">
+<form id="f" onsubmit="return false">
+<label for="sch">School</label><input id="sch" value="Ali School">
+<label for="tch">Teacher</label><input id="tch" placeholder="Teacher name">
+<div class="row"><div><label for="sub">Subject</label><select id="sub"></select></div>
+<div><label for="gr">Grade</label><select id="gr"></select></div></div>
+<label for="top">Topic / Unit</label><input id="top" placeholder="e.g. Fractions, Nouns, Photosynthesis">
+<label for="slo">SNC SLO code(s) (optional)</label><input id="slo" placeholder="Copy from the official SNC document">
+<div class="row"><div><label for="dur">Period (minutes)</label><select id="dur"><option>30</option><option>35</option><option selected>40</option><option>45</option><option>60</option></select></div>
+<div><label for="stu">Students</label><input id="stu" type="number" min="1" value="30"></div></div>
+<label for="dt">Date</label><input id="dt" type="date">
+<button class="gen" id="go">Generate lesson plan</button>
+</form>
+<div class="saved" id="saved"></div>
+<p class="note">Plans are generated automatically from built-in SNC-style templates. Always check SLOs and codes against the latest official SNC textbooks and curriculum documents.</p>
+</aside>
+<section class="panel plan">
+<div class="tools"><button class="alt" id="pr">Print / Save PDF</button><button class="alt" id="cp">Copy text</button><button class="alt" id="sv">Save plan</button></div>
+<div id="out"><div class="empty">Choose subject, grade and topic, then tap <b>Generate lesson plan</b>.</div></div>
+</section>
+</main>
+<footer>SNC Lesson Planner — Software by Taha</footer>
+<script>
+const $=i=>document.getElementById(i);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const S={
+"English":{d:"Oral Communication; Reading & Critical Thinking; Writing; Grammar & Vocabulary",m:"Textbook, flashcards, picture cards, board and markers",h:"Show a picture or object linked to “{t}” and ask what the class notices.",g:"Teacher reads and models examples of {t} aloud; pupils repeat in pairs and the teacher corrects.",p:"Pupils write five original sentences or a short paragraph using {t}.",q:["Explain {t} in your own words.","Give two examples of {t} from today's lesson.","Find and correct the mistake in a sentence about {t}."],w:"Write a short paragraph using {t} in your notebook."},
+"Urdu":{d:"Oral Communication; Reading; Writing; Grammar & Vocabulary",m:"Urdu textbook, word cards, charts, board and markers",h:"Ask a short oral question or recite a line connected to “{t}”.",g:"Teacher reads the text of {t} with correct pronunciation; pupils read aloud in turns.",p:"Pupils write meanings, sentences or a short answer on {t}.",q:["{t} کا مفہوم اپنے الفاظ میں بیان کریں۔","{t} سے دو مثالیں دیں۔","Read aloud one passage on {t} with correct pronunciation."],w:"Write five sentences about {t} in your notebook."},
+"Mathematics":{d:"Numbers & Operations; Algebra; Geometry; Measurement; Information Handling",m:"Textbook, counters or number cards, geometry set, board, worksheet",h:"Pose a real-life problem (shop, time, sharing) that leads to “{t}”.",g:"Solve two worked examples of {t} on the board; pupils solve a similar one in pairs.",p:"Pupils solve a graded worksheet on {t}, from easy to challenging.",q:["Solve: a simple problem on {t}.","Explain each step you used to solve it.","Create your own word problem on {t}."],w:"Solve five practice questions on {t} from the exercise."},
+"General Science":{d:"Scientific Inquiry; Life Science; Physical Science; Earth & Space Science; Science & Society",m:"Textbook, chart or model, simple experiment items, board",h:"Show a short demonstration or ask “what happens if…?” about {t}.",g:"Teacher explains {t} using a diagram; pupils observe, label and discuss in groups.",p:"Pupils draw and label a diagram or record observations on {t}.",q:["Define {t} in one sentence.","Draw and label a diagram related to {t}.","Why does {t} matter in daily life?"],w:"Find one example of {t} at home and write two lines about it."},
+"Social Studies":{d:"Culture & Society; Pakistan & World Geography; History; Citizenship & Governance; Economics",m:"Textbook, map of Pakistan or world, pictures, chart paper",h:"Show a map, picture or news item connected to “{t}” and ask pupils to predict the topic.",g:"Teacher links {t} to Pakistan's context using a map or timeline; groups discuss key points.",p:"Pupils complete a map task, timeline or short written answer on {t}.",q:["What do we learn about {t} today?","Locate or name one place or person related to {t}.","How does {t} affect our community?"],w:"Write three important facts about {t}."},
+"Islamiyat":{d:"Quran & Tajweed; Hadith & Seerah; Beliefs & Worship; Islamic Values & Ethics",m:"Quran or textbook, charts, board and markers",h:"Begin with a short Dua or a question about “{t}”.",g:"Teacher recites or explains {t} with meaning; pupils repeat and discuss the lesson to practise.",p:"Pupils recite, write the translation or give practical examples of {t}.",q:["What is the main message of {t}?","How can we practise {t} in daily life?","Recite or state the key part of {t}."],w:"Practise {t} at home and share one example tomorrow."},
+"Computer Science":{d:"Digital Literacy; Computational Thinking; Programming; Information Technology in Society",m:"Computer lab or projector, textbook, worksheet, board",h:"Ask where pupils see technology related to “{t}” in daily life.",g:"Teacher demonstrates {t} on a computer or a diagram; pupils follow the steps in pairs.",p:"Pupils complete a hands-on task or unplugged activity on {t}.",q:["What is {t}?","List the steps to do {t}.","Give one safe-use rule connected to {t}."],w:"Write the steps of {t} in your own words."},
+"General Knowledge":{d:"Our Surroundings; Our Country; Health & Safety; Good Habits & Values",m:"Pictures, charts, real objects, board and markers",h:"Show a picture or tell a very short story about “{t}”.",g:"Teacher talks about {t} with pictures; pupils name, point and share their experiences.",p:"Pupils draw, colour and label something about {t}.",q:["What is {t}?","Name one thing you learned about {t}.","How can you practise {t} at home?"],w:"Draw something about {t} and write one line."}};
+const GR=[1,2,3,4,5,6,7,8];
+const V=[["Name","Describe","Use","Check"],["Define","Explain","Apply","Compare"],["Analyze","Justify","Apply","Evaluate"]];
+const TAIL=["the key terms and ideas of {t}","how {t} works and why it matters","{t} in classroom and real-life situations","their own work on {t} against a given example"];
+const ST=[["Hook and prior knowledge",.1],["Presentation (direct teaching)",.3],["Guided practice",.25],["Independent practice",.25],["Assessment and closure",.1]];
+function fill(s,t){return s.replace(/\{t\}/g,t)}
+$("sub").innerHTML=Object.keys(S).map(k=>`<option>${k}</option>`).join("");
+$("gr").innerHTML=GR.map(g=>`<option value="${g}">Grade ${g}</option>`).join("");
+$("dt").valueAsDate=new Date();
+let last="";
+function build(){
+  const sub=$("sub").value,g=+$("gr").value,tp=$("top").value.trim();
+  if(!tp){$("top").focus();$("out").innerHTML='<div class="empty">Enter a topic first, for example “Fractions”.</div>';return}
+  const t=esc(tp),D=S[sub],band=g<=3?0:g<=5?1:2,dur=+$("dur").value;
+  const slos=V[band].map((v,i)=>`Students will be able to ${v.toLowerCase()} ${fill(TAIL[i],t)}.`);
+  let used=0;const mins=ST.map((s,i)=>{const m=i==4?dur-used:Math.round(dur*s[1]);used+=m;return m});
+  const act=[
+    `Teacher: ${fill(D.h,t)} Link answers to today's objectives.`,
+    `Teacher states the SLOs, introduces {t} step by step with examples and board work. Students listen, note key points and answer questions.`.replace(/\{t\}/g,t),
+    `${fill(D.g,t)} Teacher moves around, checks work and gives quick feedback.`,
+    `${fill(D.p,t)} Students work on their own while the teacher supports those who need help.`,
+    `Teacher asks the assessment questions, summarizes {t} and assigns homework. Students share what they learned.`.replace(/\{t\}/g,t)];
+  const date=$("dt").value;
+  const html=`<h2>Lesson Plan: ${t}</h2>
+<div class="meta"><span><b>School:</b> ${esc($("sch").value)}</span><span><b>Teacher:</b> ${esc($("tch").value)||"—"}</span><span><b>Subject:</b> ${sub}</span><span><b>Grade:</b> ${g}</span><span><b>Time:</b> ${dur} min</span><span><b>Students:</b> ${esc($("stu").value)}</span><span><b>Date:</b> ${date}</span><span><b>Curriculum:</b> Single National Curriculum (SNC)</span></div>
+<h3>SNC domain / standard</h3><p>${D.d}${$("slo").value?`<br><b>SLO code(s):</b> ${esc($("slo").value)}`:""}</p>
+<h3>Student Learning Outcomes (SLOs)</h3><ol>${slos.map(s=>`<li>${s}</li>`).join("")}</ol>
+<h3>Materials and resources</h3><p>${D.m}</p>
+<h3>Prior knowledge</h3><p>Students recall what they already know about ${t} from earlier classes or daily life.</p>
+<h3>Lesson procedure</h3><div class="scroll"><table><tr><th>Stage</th><th>Time</th><th>Teacher and student activity</th></tr>${ST.map((s,i)=>`<tr><td>${s[0]}</td><td>${mins[i]} min</td><td>${act[i]}</td></tr>`).join("")}</table></div>
+<h3>Assessment</h3><ul>${D.q.map(q=>`<li>${fill(q,t)}</li>`).join("")}</ul>
+<p><b>Rubric:</b> Excellent (meets all SLOs) · Good (meets most) · Needs support (reteach and revisit).</p>
+<h3>Differentiation and inclusion</h3><ul><li><b>Support:</b> pair with a peer, use pictures and simpler examples, give extra time.</li><li><b>Extension:</b> ask fast learners to create their own question or example on ${t}.</li><li><b>Inclusion:</b> seat learners with special needs near the board and give oral options.</li></ul>
+<h3>Homework</h3><p>${fill(D.w,t)}</p>
+<h3>Teacher reflection</h3><p>What worked: ________________________<br>What to improve: ________________________</p>
+<p style="text-align:right;color:var(--mute);font-size:13px">Generated by SNC Lesson Planner — Software by Taha</p>`;
+  $("out").innerHTML=html;last=html;
+}
+$("go").onclick=build;
+$("pr").onclick=()=>window.print();
+$("cp").onclick=async()=>{const x=$("out").innerText;try{await navigator.clipboard.writeText(x);$("cp").textContent="Copied"}catch(e){const r=document.createRange();r.selectNodeContents($("out"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("cp").textContent="Selected: press copy"}setTimeout(()=>$("cp").textContent="Copy text",2000)};
+function load(){try{return JSON.parse(localStorage.getItem("snc_plans")||"[]")}catch(e){return[]}}
+function store(a){try{localStorage.setItem("snc_plans",JSON.stringify(a))}catch(e){}}
+function showSaved(){const a=load();$("saved").innerHTML=a.length?"<b>Saved plans</b>"+a.map((p,i)=>`<div><a data-o="${i}">${esc(p.n)}</a><a data-d="${i}">Delete</a></div>`).join(""):""}
+$("sv").onclick=()=>{if(!last)return;const a=load();a.unshift({n:`${$("sub").value} G${$("gr").value}: ${$("top").value}`,h:last});store(a.slice(0,10));showSaved();$("sv").textContent="Saved";setTimeout(()=>$("sv").textContent="Save plan",2000)};
+$("saved").onclick=e=>{const a=load(),o=e.target.dataset.o,d=e.target.dataset.d;if(o!=null){last=a[o].h;$("out").innerHTML=last}if(d!=null){a.splice(d,1);store(a);showSaved()}};
+showSaved();
+</script>
+</body>
+</html>
